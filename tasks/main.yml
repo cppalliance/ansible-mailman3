@@ -76,3 +76,11 @@
     enabled: true
     state: started
   when: mailman3_process_manager != "supervisor"
+
+- name: Customizations
+  ansible.builtin.include_tasks:
+    file: "{{ item }}"
+  with_first_found:
+    - files:
+        - custom/main.yml
+      skip: true
