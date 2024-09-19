@@ -8,7 +8,6 @@
       ansible.builtin.stat:
         path: "{{ swap_file_path }}"
         get_checksum: false
-        get_md5: false
         get_mime: false
         get_attributes: false
       register: swap_file_check
@@ -91,6 +90,22 @@
             passno: 0
             dump: 0
             state: present
+
+        - name: Check if swap is already defined in fstab
+          ansible.builtin.lineinfile:
+            state: absent
+            path: "/etc/fstab"
+            regexp: "{{ swap_file_path }} none swap defaults 0 0"
+          check_mode: true
+          changed_when: false # This just makes things look prettier in the logs
+          register: check
+
+        - name: Define swap in fstab
+          ansible.builtin.lineinfile:
+            state: present
+            path: "/etc/fstab"
+            line: "{{ swap_file_path }} none swap defaults 0 0"
+          when: check.found == 0
 
         - name: Turn on swap
           ansible.builtin.command: swapon -a
