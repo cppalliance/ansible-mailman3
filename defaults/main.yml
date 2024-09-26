@@ -264,7 +264,7 @@ __mailman3_django_config_default:
   server_email: "{{ mailman3_site_owner }}"
   # compress_offline: true
   # socialaccount_providers: {}
-  # haystack_engine: xapian_backend.XapianEngin"
+  # haystack_engine: xapian_backend.XapianEngine"   # or, for example, haystack_engine: haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine
   # debug: false
 
 # WSGI server to install when installing with pip, currently only gunicorn is supported by this role. The Mailman 3
@@ -369,6 +369,7 @@ __mailman3_pip_packages:
   - environs
   - "{{ mailman3_python_wsgi_package }}"
   - django-pylibmc==0.6.1
+  - xapian-haystack
 
 # Packages to install from PyPI if using the pip install method. Automatically includes libsass if mailman3_use_pysassc
 # is enabled.
@@ -387,6 +388,8 @@ mailman3_packages:
 # sassc if mailman3_use_pysassc is not enabled.
 __mailman3_system_dependency_packages:
   debian:
+    - build-essential
+    - python3-dev
     - acl
     - python3
     - python3-venv
@@ -474,7 +477,6 @@ mailman3_database_list:
     password: mypassword
     subnet: "0.0.0.0/0"
 
-elasticsearch_install: true
 elasticsearch_version: '7.x'
 elasticsearch_network_host: "0.0.0.0"
 elasticsearch_http_port: 9200

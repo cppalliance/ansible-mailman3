@@ -13,7 +13,9 @@
 
 - name: Install Elasticsearch
   ansible.builtin.include_tasks: elasticsearch.yml
-  when: elasticsearch_install
+  when:
+    - "'elasticsearch' in  __mailman3_django_config_merged.haystack_engine"
+    - ansible_os_family == "Debian"
 
 - name: Install postfix
   ansible.builtin.include_tasks: postfix.yml
