@@ -1,14 +1,15 @@
 ---
-- name: Postgres apt-key
-  ansible.builtin.apt_key:
-    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
-    state: present
-
-- name: Postgres repo
-  ansible.builtin.apt_repository:
-    repo: 'deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main'
-    state: present
-    filename: 'pgdg'
+# Using postgresql's packages is a choice.
+# - name: Postgres apt-key
+#   ansible.builtin.apt_key:
+#     url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+#     state: present
+#
+# - name: Postgres repo
+#   ansible.builtin.apt_repository:
+#     repo: 'deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main'
+#     state: present
+#     filename: 'pgdg'
 
 - name: Apt update
   ansible.builtin.apt:
@@ -20,11 +21,13 @@
     name: "{{ item }}"
   with_items: "{{ mailman3_database_pg_packages }}"
 
-- name: Install pip modules
-  ansible.builtin.pip:
-    name: "{{ item }}"
-  with_items:
-    - psycopg2
+# Starting with ubuntu 24.04 you can't install regular pip modules
+# and must use a venv. Switch this to python3- apt packages.
+# - name: Install pip modules
+#   ansible.builtin.pip:
+#     name: "{{ item }}"
+#   with_items:
+#     - psycopg2
 
 - name: Ensure postgresql is running and starts on boot
   ansible.builtin.service:
