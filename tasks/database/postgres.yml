@@ -120,3 +120,14 @@
     create: true
   notify:
     - Restart postgresql
+
+- name: Additional database permissions pg_hba
+  with_items: "{{ mailman3_database_additional_permissions }}"
+  ansible.builtin.lineinfile:
+    dest: "{{ mailman3_postgresql_config_dir }}/main/pg_hba.conf"
+    line: "{{ item }}"
+    mode: '0755'
+    state: present
+    create: true
+  notify:
+    - Restart postgresql
