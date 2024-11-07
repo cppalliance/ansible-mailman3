@@ -23,3 +23,7 @@
     owner: root
     group: root
     mode: '0644'
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ ansible_hostname }}"
