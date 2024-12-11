@@ -85,7 +85,7 @@
     password: "{{ item.password }}"
     state: present
 
-- name: Multiple databases GRANT ALL PRIVILEGES ON DATABASE to user
+- name: Multiple databases GRANT ALL PRIVILEGES ON DATABASE TO user
   with_items: "{{ mailman3_database_list }}"
   become: true
   become_user: postgres
@@ -97,7 +97,7 @@
     type: database
     role: "{{ item.username }}"
 
-- name: Multiple databases GRANT ALL PRIVILEGES ON SCHEMA public to user
+- name: Multiple databases GRANT ALL PRIVILEGES ON SCHEMA public TO user
   with_items: "{{ mailman3_database_list }}"
   become: true
   become_user: postgres
@@ -109,6 +109,39 @@
     type: schema
     objs: public
     role: "{{ item.username }}"
+
+# item.additional_readonly_users should be in the form of a comma-separated string
+- name: Multiple databases GRANT SELECT ON ALL TABLES IN SCHEMA public TO additional users
+  with_items: "{{ mailman3_database_list }}"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  community.postgresql.postgresql_privs:
+    db: "{{ item.name }}"
+    privs: SELECT
+    type: table
+    schema: public
+    objs: ALL_IN_SCHEMA
+    role: "{{ item.additional_readonly_users }}"
+  when: item.additional_readonly_users is defined
+
+# item.additional_readonly_users should be in the form of a comma-separated string
+- name: Multiple databases ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO additional users
+  with_items: "{{ mailman3_database_list }}"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  community.postgresql.postgresql_privs:
+    db: "{{ item.name }}"
+    privs: SELECT
+    type: default_privs
+    schema: public
+    objs: TABLES
+    role: "{{ item.additional_readonly_users }}"
+  when: item.additional_readonly_users is defined
+
 
 - name: Multiple databases configure pg_hba
   with_items: "{{ mailman3_database_list }}"
