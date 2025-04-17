@@ -96,6 +96,7 @@ __mailman3_web_user:
   comment: "Mailman Web Services"
   home: "{{ mailman3_web_var_dir }}"
   system: true
+  shell: "/bin/bash"
 
 # The default web user if installing with packages. This is the standard Debian web server user, since this is what the
 # packages expect.

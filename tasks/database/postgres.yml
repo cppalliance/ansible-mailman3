@@ -142,7 +142,6 @@
     role: "{{ item.additional_readonly_users }}"
   when: item.additional_readonly_users is defined
 
-
 - name: Multiple databases configure pg_hba
   with_items: "{{ mailman3_database_list }}"
   ansible.builtin.lineinfile:

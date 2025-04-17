@@ -1,0 +1,6 @@
+#!/bin/sh
+
+MAILMAN_CORE_USER="{{ __mailman3_core_user_name }}"
+MAILMAN_CORE_EXECUTABLE="{{ mailman3_install_dir }}/bin/mailman"
+
+su -s /bin/sh -c "${MAILMAN_CORE_EXECUTABLE} $*" ${MAILMAN_CORE_USER}
