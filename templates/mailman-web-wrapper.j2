@@ -4,4 +4,4 @@ MAILMAN_WEB_USER="{{ __mailman3_web_user_name }}"
 MAILMAN_WEB_EXECUTABLE="{{ mailman3_install_dir }}/bin/mailman-web"
 MAILMAN_WEB_CONFIG="{{ mailman3_django_project_dir }}/settings.py"
 
-su -s /bin/sh -c "MAILMAN_WEB_CONFIG=${MAILMAN_WEB_CONFIG} ${MAILMAN_WEB_EXECUTABLE} $*" ${MAILMAN_WEB_USER}
+sudo -u ${MAILMAN_WEB_USER} MAILMAN_WEB_CONFIG=${MAILMAN_WEB_CONFIG} ${MAILMAN_WEB_EXECUTABLE} "$@"
