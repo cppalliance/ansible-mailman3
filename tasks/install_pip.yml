@@ -20,6 +20,9 @@
     name: "{{ mailman3_pip_packages }}"
     state: "{{ 'latest' if mailman3_upgrade else omit }}"
     virtualenv: "{{ mailman3_install_dir }}"
+  notify:
+    - Restart mailman3-core service
+    - Restart mailman3-web service
 
 - name: Create configuration, data, and state directories
   ansible.builtin.file:
