@@ -10,11 +10,15 @@
   notify:
     - Restart mailman3-core service
 
+# The advantage of switch this back to the 'original' method of http://localhost
+# is that it bypasses TLS/SSL, so it doesn't matter if that has been added yet.
+# base_url: {{ mailman3_hyperkitty_server_url }}/{{ mailman3_hyperkitty_root | default('archives/') }}
+
 - name: Create HyperKitty configuration file
   ansible.builtin.copy:
     content: |
       [general]
-      base_url: {{ mailman3_hyperkitty_server_url }}/{{ mailman3_hyperkitty_root | default('archives/') }}
+      base_url: http://localhost/{{ mailman3_hyperkitty_root | default('archives/') }}
       api_key: {{ mailman3_archiver_key }}
     dest: "{{ mailman3_core_etc_dir }}/hyperkitty.cfg"
     group: "{{ __mailman3_core_group_name }}"
