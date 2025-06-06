@@ -31,6 +31,9 @@ mailman3_core_var_dir: /var/lib/mailman3
 # Mailman Core logs
 mailman3_core_log_dir: /var/log/mailman3
 
+# Mailman Web logs (in this case Crons)
+mailman3_web_log_dir: /var/log/mailman3-web
+
 # Mailman Web Interface configuration files, project, and data
 mailman3_web_var_dir: "{{ mailman3_core_var_dir }}/web"
 
@@ -217,6 +220,18 @@ mailman3_logrotate_config:
   - delaycompress
   - postrotate:
       - su - {{ __mailman3_core_user_name }} -s /bin/sh -c "{{ mailman3_install_dir }}/bin/mailman -C {{ mailman3_core_etc_dir }}/mailman.cfg reopen"
+  # endscript is automatically appended
+
+# Mailman3 Core log rotation configuration
+mailman3_web_logrotate_config:
+  - weekly
+  - rotate 4
+  - compress
+  - maxsize 100M
+  - missingok
+  - notifempty
+  - sharedscripts
+  - delaycompress
   # endscript is automatically appended
 
 #
