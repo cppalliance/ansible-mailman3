@@ -1,0 +1,28 @@
+---
+
+- name: Create directories for templates
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ __mailman3_web_user_name }}"
+    group: "{{ __mailman3_web_group_name }}"
+    mode: "0755"
+  loop:
+    - '{{ mailman3_web_var_dir }}/templates/hyperkitty'
+    - '{{ mailman3_web_var_dir }}/templates/postorius'
+
+# The files installed here have the potential to be more general, and used by other services.
+# If that occurs, reorganize the tasks
+
+- name: Install templates needed for Plausible
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ __mailman3_web_user_name }}"
+    group: "{{ __mailman3_web_group_name }}"
+    mode: "0755"
+  loop:
+    - { src: 'hyperkitty-headers.html.j2', dest: '{{ mailman3_web_var_dir }}/templates/hyperkitty/headers.html' }
+    - { src: 'postorius-base.html.j2', dest: '{{ mailman3_web_var_dir }}/templates/postorius/base.html' }
+  notify:
+    - Restart mailman3-web service

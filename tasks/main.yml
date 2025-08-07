@@ -45,6 +45,9 @@
 - name: Include Django management tasks
   ansible.builtin.import_tasks: django.yml
 
+- name: Include Plausible Analytics
+  ansible.builtin.import_tasks: plausible.yml
+
 - name: Include Nginx tasks
   ansible.builtin.import_tasks: nginx.yml
   when: mailman3_install_nginx
