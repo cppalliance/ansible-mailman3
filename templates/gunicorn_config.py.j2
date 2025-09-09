@@ -2,6 +2,8 @@
 """
 import os
 
+workers = 5
+
 # ensure settings module name doesn't include invalid characters
 _django_settings_module = os.environ.get("DJANGO_SETTINGS_MODULE")
 if _django_settings_module:
