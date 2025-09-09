@@ -213,3 +213,5 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATES[0]['DIRS'] = [
     os.path.join(BASE_DIR, 'templates')
 ]
+
+HYPERKITTY_MBOX_EXPORT = env.bool("HYPERKITTY_MBOX_EXPORT", None)

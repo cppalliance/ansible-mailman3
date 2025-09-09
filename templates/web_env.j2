@@ -113,6 +113,9 @@ COMPRESS_OFFLINE='{{ __mailman3_django_config_merged.compress_offline is defined
 {% if __mailman3_django_config_merged.hyperkitty_attachment_folder is defined %}
 HYPERKITTY_ATTACHMENT_FOLDER='{{ __mailman3_django_config_merged.hyperkitty_attachment_folder }}'
 {% endif %}
+{% if  __mailman3_django_config_merged.hyperkitty_mbox_export is defined %}
+HYPERKITTY_MBOX_EXPORT='{{ __mailman3_django_config_merged.hyperkitty_mbox_export }}'
+{% endif %}
 {% if mailman3_wsgi_socket.startswith("/") %}
 ADD_REMOTE_ADDR_MIDDLEWARE='{{ mailman3_django_middleware_module_name }}.SetRemoteAddrFromForwardedFor'
 {% endif %}

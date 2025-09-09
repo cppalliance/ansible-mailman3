@@ -292,6 +292,8 @@ __mailman3_django_config_default:
   # default_http_protocol: https
   default_from_email: "postorius@{{ inventory_hostname }}"
   server_email: "{{ mailman3_site_owner }}"
+  # You may set this back to True in host_vars:
+  hyperkitty_mbox_export: false
   # compress_offline: true
   # socialaccount_providers: {}
   # haystack_engine: xapian_backend.XapianEngine"   # or, for example, haystack_engine: haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine
