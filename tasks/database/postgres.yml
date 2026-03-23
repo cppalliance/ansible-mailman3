@@ -146,7 +146,7 @@
   with_items: "{{ mailman3_database_list }}"
   ansible.builtin.lineinfile:
     dest: "{{ mailman3_postgresql_config_dir }}/main/pg_hba.conf"
-    line: "host    {{ item.name }}    {{ item.username }}    {{ item.subnet }}    md5"
+    line: "host    {{ item.name }}    {{ item.username }}    {{ item.subnet }}    scram-sha-256"
     mode: '0755'
     state: present
     create: true
