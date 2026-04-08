@@ -17,7 +17,7 @@ See [docs/mailman3-core.md](docs/mailman3-core.md) for a version of this role th
 Requirements
 ------------
 
-Test has mainly been done on Ubuntu 22.04. Pull requests are welcome to verify and re-enable other OS versions.  
+Test has mainly been done on the latest version of Ubuntu. Pull requests are welcome to verify and re-enable other OS versions.  
 
 Role Variables
 --------------
