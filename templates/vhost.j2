@@ -53,6 +53,19 @@ server {
         proxy_set_header X-Forwarded-For $remote_addr;
     }
 
+{% if mailman3_proxy_api_allowed_ips %}
+    location /api-proxy/ {
+    {% for ip in mailman3_proxy_api_allowed_ips %}
+        allow {{ ip }};
+    {% endfor %}
+        deny all;
+
+        proxy_pass http://{{ mailman3_core_api_hostname }}:{{ mailman3_core_api_port }}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+{% endif %}
    location / {
        proxy_pass http://myapp;
        proxy_set_header Host $host;

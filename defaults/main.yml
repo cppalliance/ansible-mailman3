@@ -537,3 +537,7 @@ swap_file_size_mb: 4000
 swappiness: 1
 
 mailman3_nginx_allowed_ips: []
+
+# When non-empty, nginx emits a /api-proxy/ location that forwards to the Mailman Core REST API, with allow/deny from
+# this list. Empty list (default): the location block is omitted.
+mailman3_proxy_api_allowed_ips: []
