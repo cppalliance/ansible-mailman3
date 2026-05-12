@@ -55,6 +55,7 @@ server {
 
 {% if mailman3_proxy_api_allowed_ips %}
     location /api-proxy/ {
+        allow 127.0.0.0/8;
     {% for ip in mailman3_proxy_api_allowed_ips %}
         allow {{ ip }};
     {% endfor %}
