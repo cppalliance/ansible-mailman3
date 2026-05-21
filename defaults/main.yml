@@ -436,6 +436,7 @@ __mailman3_system_dependency_packages:
     - redis
     - net-tools
     - locate
+    - lynx
   redhat-7:
     - rh-python38   # requires EL7+ and CentOS SCL
   redhat-8:
