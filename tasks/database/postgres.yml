@@ -16,6 +16,16 @@
     update_cache: true
   changed_when: false
 
+- name: Install locales package
+  ansible.builtin.apt:
+    name: locales
+    state: present
+
+- name: Generate en_US.UTF-8 locale
+  community.general.locale_gen:
+    name: en_US.UTF-8
+    state: present
+
 - name: Install packages
   ansible.builtin.apt:
     name: "{{ item }}"

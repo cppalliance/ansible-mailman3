@@ -498,14 +498,16 @@ mailman3_sasl_passwd: smtp.mailgun.org postmaster@example.com:12345
 
 # Database variables
 mailman3_database_type: postgres
+mailman3_postgresql_version: 16
 mailman3_database_pg_packages:
-  - postgresql-16
+  - "postgresql-{{ mailman3_postgresql_version }}"
   # - postgresql-contrib
   - libpq-dev
   - python3-pip
   - python3-psycopg2
+
 mailman3_database_super_password: superpassword
-mailman3_postgresql_config_dir: "/etc/postgresql/16"
+mailman3_postgresql_config_dir: "/etc/postgresql/{{ mailman3_postgresql_version }}"
 mailman3_database_list:
   - name: mailman3_web
     username: mailman3_web
