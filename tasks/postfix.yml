@@ -5,6 +5,7 @@
       - postfix
       - mailutils
       - ssl-cert
+      - libsasl2-modules
 
 - name: Install main.cf
   ansible.builtin.template:
