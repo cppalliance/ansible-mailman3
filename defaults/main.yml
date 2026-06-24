@@ -500,6 +500,8 @@ mailman3_sasl_passwd: smtp.mailgun.org postmaster@example.com:12345
 mailman3_database_type: postgres
 mailman3_postgresql_version: 16
 mailman3_database_pg_packages:
+  - acl
+  - cron
   - "postgresql-{{ mailman3_postgresql_version }}"
   # - postgresql-contrib
   - libpq-dev
@@ -544,3 +546,26 @@ mailman3_nginx_allowed_ips: []
 # When non-empty, nginx emits a /api-proxy/ location that forwards to the Mailman Core REST API, with allow/deny from
 # this list. Empty list (default): the location block is omitted.
 mailman3_proxy_api_allowed_ips: []
+
+# Adding database backups. There could be multiple types
+# This section is for the host
+mailman3_postgresql_gcloud_backups: false
+mailman3_postgresql_admin_user: postgres
+mailman3_postgresql_admin_group: postgres
+mailman3_postgresql_admin_user_homedir: /var/lib/postgresql
+mailman3_gcloud_user: "{{ mailman3_postgresql_admin_user }}"
+mailman3_gcloud_user_home: "{{ mailman3_postgresql_admin_user_homedir }}"
+mailman3_gcloud_project: my-project-id
+mailman3_gcloud_region: us-central1
+# Examining this later, this is no _src. Only _json.
+# mailman3_gcloud_sa_key_src: files/my-service-account.json
+mailman3_gcloud_sa_key_json: ""
+mailman3_gcloud_sa_key_dest: "/var/lib/postgresql/.config/gcloud/service-account.json"
+
+# Continuing the backups
+# This section of for the backup.sh script
+mailman3_postgresql_backups_s3_cmd: "/usr/bin/gcloud storage"
+mailman3_postgresql_backups_dir: "{{ mailman3_postgresql_admin_user_homedir }}/backups/postgres"
+mailman3_postgresql_backups_upload_to_bucket: !!str "yes"
+mailman3_postgresql_backups_bucket: to_set
+mailman3_postgresql_backups_weekly_bucket: to_set

@@ -1,0 +1,129 @@
+---
+- name: Create directories for db admin user
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ mailman3_postgresql_admin_user }}"
+    group: "{{ mailman3_postgresql_admin_group }}"
+    mode: '0755'
+    state: directory
+  loop:
+    - "{{ mailman3_postgresql_admin_user_homedir }}/scripts"
+    - "{{ mailman3_postgresql_admin_user_homedir }}/.aws"
+
+# Backups require gcloud
+- name: Ensure keyrings directory exists
+  ansible.builtin.file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Google Cloud public GPG key
+  ansible.builtin.get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /tmp/google-cloud.gpg
+    mode: '0644'
+
+- name: Convert GPG key to dearmored format
+  ansible.builtin.command: >
+    gpg --dearmor -o /usr/share/keyrings/google-cloud.gpg /tmp/google-cloud.gpg
+  args:
+    creates: /usr/share/keyrings/google-cloud.gpg
+
+- name: Add Google Cloud APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/google-cloud.gpg] https://packages.cloud.google.com/apt cloud-sdk main"
+    filename: google-cloud-sdk
+    state: present
+    update_cache: true
+
+- name: Install gcloud
+  ansible.builtin.apt:
+    name:
+      - google-cloud-cli
+    state: present
+
+- name: Create gcloud config directory
+  ansible.builtin.file:
+    path: "/{{ mailman3_gcloud_user_home }}/.config/gcloud"
+    state: directory
+    owner: "{{ mailman3_gcloud_user }}"
+    group: "{{ mailman3_gcloud_user }}"
+    mode: '0700'
+
+# This isn't quite going to work
+- name: Copy service account key
+  ansible.builtin.copy:
+    content: "{{ mailman3_gcloud_sa_key_json }}"
+    dest: "{{ mailman3_gcloud_sa_key_dest }}"
+    owner: "{{ mailman3_gcloud_user }}"
+    group: "{{ mailman3_gcloud_user }}"
+    mode: '0600'
+
+- name: Authenticate gcloud with service account
+  become: true
+  become_user: "{{ mailman3_gcloud_user }}"
+  ansible.builtin.command: >
+   gcloud auth activate-service-account --key-file={{ mailman3_gcloud_sa_key_dest }}
+  args:
+    creates: "/{{ mailman3_gcloud_user_home }}/.config/gcloud/credentials.db"
+
+- name: Get current gcloud project
+  become: true
+  become_user: "{{ mailman3_gcloud_user }}"
+  ansible.builtin.command: gcloud config get-value project
+  register: gcloud_project_current
+  changed_when: false
+  failed_when: false
+
+- name: Set default project
+  become: true
+  become_user: "{{ mailman3_gcloud_user }}"
+  ansible.builtin.command: >
+    gcloud config set project {{ mailman3_gcloud_project }}
+  changed_when: true
+  when: gcloud_project_current.stdout != mailman3_gcloud_project
+
+- name: Get current gcloud region
+  become: true
+  become_user: "{{ mailman3_gcloud_user }}"
+  ansible.builtin.command: gcloud config get-value compute/region
+  register: gcloud_region_current
+  changed_when: false
+  failed_when: false
+
+- name: Set default region
+  become: true
+  become_user: "{{ mailman3_gcloud_user }}"
+  ansible.builtin.command: >
+    gcloud config set compute/region {{ mailman3_gcloud_region }}
+  changed_when: true
+  when: gcloud_region_current.stdout != mailman3_gcloud_region
+
+- name: Install db admin user scripts
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "{{ mailman3_postgresql_admin_user_homedir }}/scripts/{{ item }}"
+    owner: "{{ mailman3_postgresql_admin_user }}"
+    group: "{{ mailman3_postgresql_admin_group }}"
+    mode: "0755"
+  loop:
+    - cleanup.sh
+    - postgresbackup.sh
+
+- name: Cron job to run postgresbackup.sh
+  ansible.builtin.cron:
+    name: Run postgresbackup.sh
+    minute: "0"
+    hour: "8"
+    day: "*"
+    job: "{{ mailman3_postgresql_admin_user_homedir }}/scripts/postgresbackup.sh > /tmp/postgresbackup.txt 2>&1"
+    user: "{{ mailman3_postgresql_admin_user }}"
+
+- name: Cron job to run cleanup.sh
+  ansible.builtin.cron:
+    name: Run cleanup.sh
+    minute: "0"
+    hour: "9"
+    day: "*"
+    job: "{{ mailman3_postgresql_admin_user_homedir }}/scripts/cleanup.sh > /tmp/cleanup.txt 2>&1"
+    user: "{{ mailman3_postgresql_admin_user }}"
