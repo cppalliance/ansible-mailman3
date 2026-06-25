@@ -1,0 +1,18 @@
+---
+- name: Mailman3 playbook install backups if missing
+  hosts: mailman3-database
+  become: true
+  remote_user: ubuntu
+  tasks:
+    - name: Install backups
+      ansible.builtin.include_role:
+        name: cppalliance.mailman3
+        tasks_from: database/backups-gcloud.yml
+
+# - name: Mailman3 playbook
+#   hosts: mailman3
+#   become: true
+#   remote_user: ubuntu
+#   force_handlers: true
+#   roles:
+#     - role: cppalliance.mailman3
