@@ -6,7 +6,6 @@ from mailman_web.settings.base import *
 from mailman_web.settings.mailman import *
 import os
 import environs
-import ast
 
 env = environs.Env()
 env.read_env()
@@ -148,10 +147,11 @@ if env("HAYSTACK_ENGINE", None):
             },
         }
 
-if env("SOCIALACCOUNT_PROVIDERS", None):
-    for provider in env("SOCIALACCOUNT_PROVIDERS", None).split(", "):
-        provider = provider.strip()
-        INSTALLED_APPS.append("allauth.socialaccount.providers.%" % provider)
+{% if __mailman3_django_config_merged.socialaccount_providers is defined %}
+{% for provider in __mailman3_django_config_merged.socialaccount_providers | sort %}
+INSTALLED_APPS.append('allauth.socialaccount.providers.{{ provider }}')
+{% endfor %}
+{% endif %}
 
 if env("USE_X_FORWARDED_HOST", None):
     # If you're behind a proxy, use the X-Forwarded-Host header
@@ -176,12 +176,25 @@ if env("DEFAULT_HTTP_PROTOCOL", None):
     # You probably want https in production
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = env("DEFAULT_HTTP_PROTOCOL", None)
 
-if env("SOCIALACCOUNT_PROVIDERS", None):
-    SOCIALACCOUNT_PROVIDERS = {}
-    for provider in env("SOCIALACCOUNT_PROVIDERS", None).split(", "):
-        provider = provider.strip()
-        variablename = "SOCIALACCOUNT_PROVIDERS_%" % provider.upper()
-        SOCIALACCOUNT_PROVIDERS.update({provider, ast.literal_eval(env(variablename, None))})
+{% if __mailman3_django_config_merged.socialaccount_providers is defined %}
+SOCIALACCOUNT_PROVIDERS = {
+{% for key in __mailman3_django_config_merged.socialaccount_providers | sort %}
+{# Dumps Ansible's Python representation of the value directly into settings.py.
+   Nested dicts (e.g. openid_connect APPS / settings) don't fit cleanly in .env,
+   so this config is rendered at template time rather than passed via web_env. #}
+    '{{ key }}': {{ __mailman3_django_config_merged.socialaccount_providers[key] }},
+{% endfor %}
+}
+{% endif %}
+{% if __mailman3_django_config_merged.socialaccount_email_authentication is defined %}
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = {{ __mailman3_django_config_merged.socialaccount_email_authentication | bool | ternary('True', 'False') }}
+{% endif %}
+{% if __mailman3_django_config_merged.socialaccount_email_authentication_auto_connect is defined %}
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = {{ __mailman3_django_config_merged.socialaccount_email_authentication_auto_connect | bool | ternary('True', 'False') }}
+{% endif %}
+{% if __mailman3_django_config_merged.socialaccount_login_on_get is defined %}
+SOCIALACCOUNT_LOGIN_ON_GET = {{ __mailman3_django_config_merged.socialaccount_login_on_get | bool | ternary('True', 'False') }}
+{% endif %}
 
 if env("COMPRESS_OFFLINE", None):
     #

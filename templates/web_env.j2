@@ -76,22 +76,10 @@ ELASTICSEARCH_URL='{{ elasticsearch_url }}'
 {% if elasticsearch_index_name is defined %}
 ELASTICSEARCH_INDEX_NAME='{{ elasticsearch_index_name }}'
 {% endif %}
-{% if __mailman3_django_config_merged.socialaccount_providers is defined %}
-{% set ns.jinja2_socialaccount_providers = "" %}
-{% for provider in __mailman3_django_config_merged.socialaccount_providers %}
-{% if ns.jinja2_socialaccount_providers == "" %}
-{% set ns.jinja2_socialaccount_providers = provider %}
-{% else %}
-{% set ns.jinja2_socialaccount_providers = (ns.jinja2_socialaccount_providers + ", " + provider) %}
-{% endif %}
-{% endfor %}
-SOCIALACCOUNT_PROVIDERS='{{ ns.jinja2_socialaccount_providers }}'
-{% endif %}
-{% if __mailman3_django_config_merged.socialaccount_providers is defined %}
-{% for key, value in __mailman3_django_config_merged.socialaccount_providers.items %}
-SOCIALACCOUNT_PROVIDERS_{{ key | upper }}='{{ value }}'
-{% endfor %}
-{% endif %}
+{# SOCIALACCOUNT_PROVIDERS (and related socialaccount_* flags) are intentionally
+   NOT exposed via .env. Nested dict values with quoted strings don't survive
+   shell-style .env quoting cleanly, so they are rendered directly into
+   settings.py.j2 from mailman3_django_config.socialaccount_providers etc. #}
 {% if  __mailman3_django_config_merged.use_x_forwarded_host is defined %}
 USE_X_FORWARDED_HOST='{{ __mailman3_django_config_merged.use_x_forwarded_host }}'
 {% endif %}

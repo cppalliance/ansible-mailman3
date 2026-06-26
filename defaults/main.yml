@@ -295,7 +295,17 @@ __mailman3_django_config_default:
   # You may set this back to True in host_vars:
   hyperkitty_mbox_export: false
   # compress_offline: true
+  # socialaccount_providers and the related socialaccount_* flags below are rendered
+  # directly into settings.py from this Ansible config, NOT exposed via the .env file.
+  # Rationale: SOCIALACCOUNT_PROVIDERS values are deeply nested dicts (e.g. the
+  # openid_connect provider has APPS = [{... "settings": {...}}]) and contain secrets;
+  # representing that as a flat shell-quoted env var is fragile and doesn't add value
+  # for local-docker parity (a docker dev wanting to test OIDC needs a settings overlay
+  # anyway). Keep these under mailman3_django_config in inventory / host_vars.
   # socialaccount_providers: {}
+  # socialaccount_email_authentication: true
+  # socialaccount_email_authentication_auto_connect: false   # flip to true after all users can SSO
+  # socialaccount_login_on_get: true                         # single-click "Sign in with <provider>"
   # haystack_engine: xapian_backend.XapianEngine"   # or, for example, haystack_engine: haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine
   # debug: false
 
