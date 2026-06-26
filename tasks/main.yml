@@ -102,5 +102,5 @@
     file: "{{ item }}"
   with_first_found:
     - files:
-        - custom/main.yml
+        - "{{ mailman3_custom_tasks }}"
       skip: true

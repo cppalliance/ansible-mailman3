@@ -547,6 +547,15 @@ mailman3_nginx_allowed_ips: []
 # this list. Empty list (default): the location block is omitted.
 mailman3_proxy_api_allowed_ips: []
 
+# Copy a host's customized tasks
+# to a location such as my_custom_tasks/main.yml, usually separating them
+# per directory, not just filename. Then set
+# mailman3_custom_tasks: my_custom_tasks/main.yml
+# If the tasks generate statics in the static_custom folder, also set
+# mailman3_static_custom to true.
+mailman3_custom_tasks: custom/main.yml
+mailman3_static_custom: false
+
 # Adding database backups. There could be multiple types
 # This section is for the host
 mailman3_postgresql_gcloud_backups: false
