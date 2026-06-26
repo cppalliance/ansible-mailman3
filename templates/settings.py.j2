@@ -177,14 +177,11 @@ if env("DEFAULT_HTTP_PROTOCOL", None):
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = env("DEFAULT_HTTP_PROTOCOL", None)
 
 {% if __mailman3_django_config_merged.socialaccount_providers is defined %}
-SOCIALACCOUNT_PROVIDERS = {
-{% for key in __mailman3_django_config_merged.socialaccount_providers | sort %}
-{# Dumps Ansible's Python representation of the value directly into settings.py.
-   Nested dicts (e.g. openid_connect APPS / settings) don't fit cleanly in .env,
-   so this config is rendered at template time rather than passed via web_env. #}
-    '{{ key }}': {{ __mailman3_django_config_merged.socialaccount_providers[key] }},
-{% endfor %}
-}
+{# Rendered directly into settings.py rather than via .env: nested dict values
+   with secrets don't survive shell-style .env quoting. The pprint filter is a
+   Jinja2 builtin that returns pprint.pformat() of the value, which is valid
+   Python (correct True/False/None, quoting, and nesting). #}
+SOCIALACCOUNT_PROVIDERS = {{ __mailman3_django_config_merged.socialaccount_providers | pprint }}
 {% endif %}
 {% if __mailman3_django_config_merged.socialaccount_email_authentication is defined %}
 SOCIALACCOUNT_EMAIL_AUTHENTICATION = {{ __mailman3_django_config_merged.socialaccount_email_authentication | bool | ternary('True', 'False') }}
