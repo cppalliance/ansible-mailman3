@@ -68,7 +68,10 @@ else:
 #: Hosts/domain names that are valid for this site; required if DEBUG is False.
 #: See https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]  # Archiving API from Mailman, keep it.
-ALLOWED_HOSTS.extend(env("ALLOWED_HOSTS", None).split(", "))
+# Split on "," (not ", ") and strip whitespace so both "a,b" and "a, b" work.
+ALLOWED_HOSTS.extend(
+    h.strip() for h in env("ALLOWED_HOSTS", None).split(",") if h.strip()
+)
 
 if env("DJANGO_URLS_MODULE_NAME", None):
     #: URL Configuration for Django
@@ -81,7 +84,10 @@ if env("DJANGO_URLS_MODULE_NAME", None):
 CSRF_TRUSTED_ORIGINS = []
 # "lists.your-domain.org",
 # Add here all production domains you have.
-CSRF_TRUSTED_ORIGINS.extend(env("CSRF_TRUSTED_ORIGINS", None).split(", "))
+# Split on "," (not ", ") and strip whitespace so both "a,b" and "a, b" work.
+CSRF_TRUSTED_ORIGINS.extend(
+    o.strip() for o in env("CSRF_TRUSTED_ORIGINS", None).split(",") if o.strip()
+)
 
 #: Current Django Site being served. This is used to customize the web host
 #: being used to serve the current website. For more details about Django
@@ -159,9 +165,10 @@ if env("USE_X_FORWARDED_HOST", None):
     USE_X_FORWARDED_HOST = env.bool("USE_X_FORWARDED_HOST", False)
 
 if env("SECURE_PROXY_SSL_HEADER", None):
-    # And if your proxy does your SSL encoding for you, set SECURE_PROXY_SSL_HEADER
-    # https://docs.djangoproject.com/en/1.8/ref/settings/#secure-proxy-ssl-header
-    SECURE_PROXY_SSL_HEADER = env("SECURE_PROXY_SSL_HEADER", "https")
+    # Django expects a (header, value) tuple, e.g. ("HTTP_X_FORWARDED_PROTO", "https").
+    # https://docs.djangoproject.com/en/stable/ref/settings/#secure-proxy-ssl-header
+    # The env var supplies the WSGI meta header name; the value ("https") is fixed.
+    SECURE_PROXY_SSL_HEADER = (env("SECURE_PROXY_SSL_HEADER"), "https")
 
 if env("LANGUAGE_CODE", None):
     # Internationalization
