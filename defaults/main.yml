@@ -306,6 +306,7 @@ __mailman3_django_config_default:
   # socialaccount_email_authentication: true
   # socialaccount_email_authentication_auto_connect: false   # flip to true after all users can SSO
   # socialaccount_login_on_get: true                         # single-click "Sign in with <provider>"
+  # socialaccount_only: false                                # optional setting
   # haystack_engine: xapian_backend.XapianEngine"   # or, for example, haystack_engine: haystack.backends.elasticsearch7_backend.Elasticsearch7SearchEngine
   # debug: false
 
