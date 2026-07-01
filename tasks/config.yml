@@ -38,13 +38,26 @@
   notify:
     - Restart mailman3-core service
 
-- name: Install custom urls.py
+- name: Install custom urls.py (base module for postorius/hyperkitty root overrides)
   ansible.builtin.template:
     src: "urls.py.j2"
     mode: "0644"
-    dest: "{{ mailman3_django_project_dir }}/{{ mailman3_django_urls_module_name }}.py"
+    dest: "{{ mailman3_django_project_dir }}/ansible_galaxyproject_mailman3_urls.py"
     backup: "{{ mailman3_backup_configs }}"
-  when: mailman3_django_urls_module_name
+  # Trigger is now explicit rather than derived through mailman3_django_urls_module_name,
+  # so this task installs the base file whenever it's needed, regardless of whether
+  # something else (e.g. the extras overlay below) has hijacked the top-level module name.
+  when: mailman3_postorius_root is defined or mailman3_hyperkitty_root is defined
+  notify:
+    - Reload mailman3-web service
+
+- name: Install custom urls.py (additive overlay for account_signup stub)
+  ansible.builtin.template:
+    src: "urls_extras.py.j2"
+    mode: "0644"
+    dest: "{{ mailman3_django_project_dir }}/ansible_galaxyproject_mailman3_urls_extras.py"
+    backup: "{{ mailman3_backup_configs }}"
+  when: mailman3_socialaccount_signup_stub | default(false) | bool
   notify:
     - Reload mailman3-web service
 

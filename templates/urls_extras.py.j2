@@ -1,0 +1,48 @@
+# {{ ansible_managed }}
+#
+# Additive URL overlay for Mailman-web.
+#
+# This module inherits urlpatterns from whichever base URLconf is currently
+# active (the role's custom-roots module if postorius/hyperkitty prefixes were
+# overridden, otherwise upstream mailman_web.urls) and prepends any extras
+# opted in through role variables. Prepending ensures our patterns win on both
+# URL resolution (first match) and reverse-by-name lookups.
+#
+# Installed by ansible-mailman3 when at least one of the extras below is
+# enabled. If none are enabled, the role points ROOT_URLCONF at the base
+# module directly and this file is not installed.
+
+from django.urls import path, reverse_lazy
+from django.views.generic import RedirectView
+
+{% if mailman3_postorius_root is defined or mailman3_hyperkitty_root is defined %}
+# Custom postorius/hyperkitty roots are in play -> inherit from the role's
+# base URLconf (installed alongside this one).
+from ansible_galaxyproject_mailman3_urls import urlpatterns as _base_urlpatterns
+{% else %}
+# No custom roots configured -> inherit directly from upstream mailman_web.
+from mailman_web.urls import urlpatterns as _base_urlpatterns
+{% endif %}
+
+_extras = [
+{% if mailman3_socialaccount_signup_stub | default(false) | bool %}
+    # Stub for the 'account_signup' URL name. django-allauth drops the real
+    # /accounts/signup/ route when SOCIALACCOUNT_ONLY = True, but several
+    # installed templates (postorius, django-mailman3, some 65.x allauth
+    # account/login.html releases) still call {% raw %}{% url 'account_signup' %}{% endraw %} and
+    # would raise NoReverseMatch on any page render.
+    # This stub keeps the name resolvable and sends anyone who hits the URL
+    # to the login page, preserving query strings (e.g. ?next=...).
+    path(
+        "accounts/signup/",
+        RedirectView.as_view(
+            url=reverse_lazy("account_login"),
+            permanent=False,
+            query_string=True,
+        ),
+        name="account_signup",
+    ),
+{% endif %}
+]
+
+urlpatterns = _extras + _base_urlpatterns

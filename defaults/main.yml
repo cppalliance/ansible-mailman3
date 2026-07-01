@@ -352,10 +352,29 @@ mailman3_default_from_user: postorius
 # copy of url.py templated from the role instead of the one installed with Mailman.
 # mailman3_postorius_root: 'mailman3/'
 # mailman3_hyperkitty_root: 'archives/'
+
+# When true, install an additive URL overlay that adds a stub named 'account_signup'
+# redirecting to the login page. Needed when SOCIALACCOUNT_ONLY = True is enabled in
+# django-allauth, because allauth then removes /accounts/signup/, but several installed
+# templates (postorius, django-mailman3, allauth's own account/login.html on some 65.x
+# releases) still reverse the name and would raise NoReverseMatch on any page render.
+# The overlay is additive: it imports the current base urlpatterns (either the role's
+# custom-roots urls module below, or upstream mailman_web.urls) and prepends the stub.
+mailman3_socialaccount_signup_stub: false
+
+# ROOT_URLCONF selection:
+#   - If the signup stub is enabled, use the overlay module (which itself imports
+#     from either the custom-roots base or upstream mailman_web.urls).
+#   - Else if custom postorius/hyperkitty roots are set, use the custom-roots base.
+#   - Else leave ROOT_URLCONF at whatever mailman_web ships (the settings.py.j2
+#     "if env(...)" guard skips assigning it entirely).
 mailman3_django_urls_module_name: >-
   {{
-    (mailman3_postorius_root is defined or mailman3_hyperkitty_root is defined) | ternary(
-      'ansible_galaxyproject_mailman3_urls', none
+    (mailman3_socialaccount_signup_stub | default(false) | bool) | ternary(
+      'ansible_galaxyproject_mailman3_urls_extras',
+      (mailman3_postorius_root is defined or mailman3_hyperkitty_root is defined) | ternary(
+        'ansible_galaxyproject_mailman3_urls', none
+      )
     )
   }}
 
