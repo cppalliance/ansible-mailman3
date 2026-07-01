@@ -203,7 +203,7 @@ SOCIALACCOUNT_LOGIN_ON_GET = {{ __mailman3_django_config_merged.socialaccount_lo
 SOCIALACCOUNT_ONLY = {{ __mailman3_django_config_merged.socialaccount_only | bool | ternary('True', 'False') }}
 {% endif %}
 {% if __mailman3_django_config_merged.account_email_verification is defined %}
-ACCOUNT_EMAIL_VERIFICATION = {{ __mailman3_django_config_merged.account_email_verification }}
+ACCOUNT_EMAIL_VERIFICATION = "{{ __mailman3_django_config_merged.account_email_verification }}"
 {% endif %}
 
 if env("COMPRESS_OFFLINE", None):
