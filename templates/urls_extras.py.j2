@@ -26,6 +26,42 @@ from mailman_web.urls import urlpatterns as _base_urlpatterns
 
 _extras = []
 
+{% if mailman3_socialaccount_auto_login_url | default('') | trim | length > 0 %}
+# ---------------------------------------------------------------------------
+# Auto-redirect /accounts/login/ to a single social provider.
+#
+# SOCIALACCOUNT_ONLY = True is an enforcement setting - it doesn't touch
+# allauth's account/login.html template, so by default the chooser page still
+# renders a local-password form (POSTs to which would 403) alongside a
+# "Sign in with X" button. When only one provider is meaningful on this
+# deployment, we can skip the chooser entirely by replacing /accounts/login/
+# with a redirect to that provider's login URL.
+#
+# Requires SOCIALACCOUNT_LOGIN_ON_GET = True (otherwise the provider URL
+# renders its own "click to continue" page instead of starting OAuth/OIDC on
+# GET, which just moves the extra click to a different template).
+#
+# NOTE on URL-name reversal: this pattern shares the name 'account_login' with
+# allauth's own pattern. Because we prepend, ours is registered first, so
+# reverse('account_login') resolves to our pattern - which still points at
+# /accounts/login/ (same path allauth registered), so no functional change to
+# any {% raw %}{% url 'account_login' %}{% endraw %} rendered in templates. The URL resolver still
+# matches ours first for actual /accounts/login/ requests, which is what makes
+# the redirect take effect.
+# ---------------------------------------------------------------------------
+_extras.append(
+    path(
+        "accounts/login/",
+        RedirectView.as_view(
+            url="{{ mailman3_socialaccount_auto_login_url | trim }}",
+            permanent=False,
+            query_string=True,
+        ),
+        name="account_login",
+    ),
+)
+{% endif %}
+
 {% if mailman3_socialaccount_signup_stub | default(false) | bool %}
 # ---------------------------------------------------------------------------
 # Stubs for URL names that django-allauth removes when SOCIALACCOUNT_ONLY=True.

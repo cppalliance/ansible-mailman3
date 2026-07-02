@@ -353,24 +353,46 @@ mailman3_default_from_user: postorius
 # mailman3_postorius_root: 'mailman3/'
 # mailman3_hyperkitty_root: 'archives/'
 
-# When true, install an additive URL overlay that adds a stub named 'account_signup'
-# redirecting to the login page. Needed when SOCIALACCOUNT_ONLY = True is enabled in
-# django-allauth, because allauth then removes /accounts/signup/, but several installed
-# templates (postorius, django-mailman3, allauth's own account/login.html on some 65.x
-# releases) still reverse the name and would raise NoReverseMatch on any page render.
-# The overlay is additive: it imports the current base urlpatterns (either the role's
-# custom-roots urls module below, or upstream mailman_web.urls) and prepends the stub.
+# When true, install an additive URL overlay that adds stubs for URL names that
+# django-allauth removes when SOCIALACCOUNT_ONLY = True (account_signup,
+# account_reset_password, etc.). Several installed templates (postorius,
+# django-mailman3, allauth's own account/login.html on some 65.x releases)
+# reverse these names unconditionally and would raise NoReverseMatch on any
+# page render. Each stub redirects to /accounts/login/ preserving ?next=.
+# The overlay is additive: it imports the current base urlpatterns (either the
+# role's custom-roots urls module below, or upstream mailman_web.urls) and
+# prepends the stubs. To extend the list of stubbed names, edit
+# templates/urls_extras.py.j2 (search for _socialaccount_only_stubs).
 mailman3_socialaccount_signup_stub: false
 
+# When non-empty, /accounts/login/ auto-redirects to this URL, forwarding the
+# incoming ?next= parameter. Skips allauth's login chooser page. Useful when
+# SOCIALACCOUNT_ONLY = True and only one social provider is meaningful on this
+# deployment - set this to that provider's allauth login URL:
+#   - OIDC provider named 'wg21':     /accounts/oidc/wg21/login/
+#   - OAuth2 provider named 'github': /accounts/github/login/
+# (Trailing slash matters - that's the URL as allauth registers it.)
+#
+# Requires SOCIALACCOUNT_LOGIN_ON_GET = True on the receiving allauth to skip
+# the "click to continue" click-through page and start OAuth/OIDC on GET.
+#
+# Setting this activates the extras overlay module below, same as the signup
+# stub does. Leave empty to keep allauth's default chooser behavior.
+mailman3_socialaccount_auto_login_url: ""
+
 # ROOT_URLCONF selection:
-#   - If the signup stub is enabled, use the overlay module (which itself imports
-#     from either the custom-roots base or upstream mailman_web.urls).
+#   - If any extras-overlay feature is enabled (signup stub OR auto-login URL),
+#     use the overlay module (which itself imports from either the custom-roots
+#     base or upstream mailman_web.urls).
 #   - Else if custom postorius/hyperkitty roots are set, use the custom-roots base.
 #   - Else leave ROOT_URLCONF at whatever mailman_web ships (the settings.py.j2
 #     "if env(...)" guard skips assigning it entirely).
 mailman3_django_urls_module_name: >-
   {{
-    (mailman3_socialaccount_signup_stub | default(false) | bool) | ternary(
+    (
+      (mailman3_socialaccount_signup_stub | default(false) | bool)
+      or (mailman3_socialaccount_auto_login_url | default('') | trim | length > 0)
+    ) | ternary(
       'ansible_galaxyproject_mailman3_urls_extras',
       (mailman3_postorius_root is defined or mailman3_hyperkitty_root is defined) | ternary(
         'ansible_galaxyproject_mailman3_urls', none

@@ -51,13 +51,15 @@
   notify:
     - Reload mailman3-web service
 
-- name: Install custom urls.py (additive overlay for account_signup stub)
+- name: Install custom urls.py (additive overlay for SOCIALACCOUNT_ONLY workarounds)
   ansible.builtin.template:
     src: "urls_extras.py.j2"
     mode: "0644"
     dest: "{{ mailman3_django_project_dir }}/ansible_galaxyproject_mailman3_urls_extras.py"
     backup: "{{ mailman3_backup_configs }}"
-  when: mailman3_socialaccount_signup_stub | default(false) | bool
+  when: >
+    (mailman3_socialaccount_signup_stub | default(false) | bool)
+    or (mailman3_socialaccount_auto_login_url | default('') | trim | length > 0)
   notify:
     - Reload mailman3-web service
 
