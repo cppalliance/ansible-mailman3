@@ -76,8 +76,11 @@ _extras.append(
 # ---------------------------------------------------------------------------
 _socialaccount_only_stubs = [
     # (URL path, URL name)
-    ("accounts/signup/",         "account_signup"),
-    ("accounts/password/reset/", "account_reset_password"),
+    ("accounts/signup/",          "account_signup"),
+    ("accounts/password/reset/",  "account_reset_password"),
+    ("accounts/password/change/", "account_change_password"),
+    ("accounts/password/set/",    "account_set_password"),
+    ("accounts/email/",           "account_email"),
 ]
 
 for _path, _name in _socialaccount_only_stubs:
