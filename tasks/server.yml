@@ -4,12 +4,16 @@
     update_cache: true
   changed_when: false
 
+# The intended name for this host comes from the inventory, not from whatever
+# hostname the provider happened to set on the box. `inventory_hostname` is the
+# name as written in the inventory (ideally the FQDN, e.g. www.example.com)
+# and `inventory_hostname_short` is the part before the first dot (e.g. monitor).
 - name: Set line in /etc/hosts
   when: mailman3_core_public_rest_api
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    regexp: "{{ inventory_hostname }}"
-    line: "{{ ansible_default_ipv4.address | default(ansible_all_ipv4_addresses[0]) }} {{ inventory_hostname }} {{ ansible_hostname }}"
+    regexp: "^{{ (ansible_facts['default_ipv4'].address | default(ansible_facts['all_ipv4_addresses'][0])) | regex_escape }}\\s"
+    line: "{{ ansible_facts['default_ipv4'].address | default(ansible_facts['all_ipv4_addresses'][0]) }} {{ inventory_hostname }} {{ inventory_hostname_short }}"
     owner: root
     group: root
     mode: '0644'
@@ -18,12 +22,12 @@
   when: not mailman3_core_public_rest_api
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    regexp: "{{ inventory_hostname }}"
-    line: "127.0.1.1 {{ inventory_hostname }} {{ ansible_hostname }}"
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1 {{ inventory_hostname }} {{ inventory_hostname_short }}"
     owner: root
     group: root
     mode: '0644'
 
 - name: Set hostname
   ansible.builtin.hostname:
-    name: "{{ ansible_hostname }}"
+    name: "{{ inventory_hostname_short }}"
